@@ -1,0 +1,6 @@
+@Hoved_Opgave_Datamatiker_HostAddress = http://localhost:5019
+
+GET {{Hoved_Opgave_Datamatiker_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
