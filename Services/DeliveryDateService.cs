@@ -29,9 +29,11 @@ namespace Hoved_Opgave_Datamatiker.Services
             DayOfWeek targetDay = (DayOfWeek)segment;
             var today = DateTime.Today;
 
-            // Ensure DB has enough future delivery dates for the segment
+            // First filter only on what EF can translate (e.g., DeliveryDate >= today)
             var existingDates = _Context.DeliveryDates
-                .Where(d => d.DeliveryDate >= today && d.DeliveryDate.DayOfWeek == targetDay)
+                .Where(d => d.DeliveryDate >= today)
+                .AsEnumerable() // switch to client-side LINQ
+                .Where(d => d.DeliveryDate.DayOfWeek == targetDay)
                 .OrderBy(d => d.DeliveryDate)
                 .ToList();
 
@@ -62,9 +64,11 @@ namespace Hoved_Opgave_Datamatiker.Services
                     _Context.SaveChanges();
                 }
 
-                // Refresh existingDates to include the newly added ones
+                // Refresh the list after adding new dates
                 existingDates = _Context.DeliveryDates
-                    .Where(d => d.DeliveryDate >= today && d.DeliveryDate.DayOfWeek == targetDay)
+                    .Where(d => d.DeliveryDate >= today)
+                    .AsEnumerable()
+                    .Where(d => d.DeliveryDate.DayOfWeek == targetDay)
                     .OrderBy(d => d.DeliveryDate)
                     .Take(count)
                     .ToList();
@@ -76,6 +80,8 @@ namespace Hoved_Opgave_Datamatiker.Services
 
             return existingDates;
         }
+
+
 
     }
 }

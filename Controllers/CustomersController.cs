@@ -1,4 +1,5 @@
-﻿using Hoved_Opgave_Datamatiker.Models;
+﻿using Hoved_Opgave_Datamatiker.DBContext;
+using Hoved_Opgave_Datamatiker.Models;
 using Hoved_Opgave_Datamatiker.Models.Dto;
 using Hoved_Opgave_Datamatiker.Repository;
 using Hoved_Opgave_Datamatiker.Services;
@@ -15,35 +16,67 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         private readonly IProductRepo _productRepo;
         private readonly ICustomerService _customerService;
         private readonly IDeliveryDateService _deliveryDateService;
+        private readonly AppDBContext context;
 
-        public CustomersController(ICustomerRepo customerRepo, IDeliveryDateRepo deliveryDateRepo, IProductRepo productRepo, ICustomerService customerService, IDeliveryDateService deliveryDateService)
+        public CustomersController(ICustomerRepo customerRepo, IDeliveryDateRepo deliveryDateRepo, IProductRepo productRepo, ICustomerService customerService, IDeliveryDateService deliveryDateService, AppDBContext context)
         {
             _customerRepo = customerRepo;
             _deliveryDateRepo = deliveryDateRepo;
             _productRepo = productRepo;
             _customerService = customerService;
             _deliveryDateService = deliveryDateService;
+            this.context = context;
         }
+
+        //// GET: api/customers
+        //[HttpGet]
+        //public ActionResult<List<CustomerDto>> GetAllCustomers()
+        //{
+        //    var customers = _customerRepo.GetAllCustomers();
+
+        //    if (customers == null || !customers.Any())
+        //        return NotFound("No customers found.");
+
+        //    var customerDtos = customers.Select(c =>
+        //    {
+        //        var deliveryDates = _customerService.GetDeliveryDatesForCustomer(c.CustomerId);
+        //        var deliveryDateList = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
+
+        //        return MapToCustomerDto(c, deliveryDateList);
+        //    }).ToList();
+
+        //    return Ok(customerDtos);
+        //}
+
+
+
 
         // GET: api/customers
-        [HttpGet]
-        public ActionResult<List<CustomerDto>> GetAllCustomers()
-        {
-            var customers = _customerRepo.GetAllCustomers();
+        //[HttpGet]
+        //public ActionResult<List<CustomerDto>> GetAllCustomers()
+        //{
+        //    var customers = _customerRepo.GetAllCustomers();
 
-            if (customers == null || !customers.Any())
-                return NotFound("No customers found.");
+        //    if (customers == null || !customers.Any())
+        //        return NotFound("No customers found.");
 
-            var customerDtos = customers.Select(c =>
-            {
-                var deliveryDates = _customerService.GetDeliveryDatesForCustomer(c.CustomerId);
-                var deliveryDateList = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
+        //    var customerDtos = customers.Select(c =>
+        //    {
+        //        var deliveryDates = _customerService.GetDeliveryDatesForCustomer(c.CustomerId);
+        //        var deliveryDateList = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
 
-                return MapToCustomerDto(c, deliveryDateList);
-            }).ToList();
+        //        return MapToCustomerDto(c, deliveryDateList);
+        //    }).ToList();
 
-            return Ok(customerDtos);
-        }
+        //    return Ok(customerDtos);
+        //}
+
+
+
+
+
+
+
 
 
         // GET: api/customers/5
@@ -82,7 +115,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             // Assign delivery dates based on the customer's segment
             if (Enum.TryParse<Segment>(customer.Segment, out var segmentEnum))
             {
-                var matchingDates = _deliveryDateService.GetDeliveryDatesForSegment(segmentEnum, 10);
+                var matchingDates = _deliveryDateService.GetDeliveryDatesForSegmentDB(segmentEnum, 10);
 
                 // Assign delivery dates to the customer
                 _customerService.AssignDeliveryDates(addedCustomer, matchingDates);
@@ -96,6 +129,46 @@ namespace Hoved_Opgave_Datamatiker.Controllers
 
             return BadRequest("Invalid segment value.");
         }
+
+        // DELETE: api/customers/5
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCustomer(int id)
+        {
+            var customer = _customerRepo.GetCustomerById(id);
+
+            if (customer == null)
+                return NotFound($"Customer with ID {id} not found.");
+
+            // Optionally clear delivery date links from service (if needed)
+            // _customerService.RemoveDeliveryDatesForCustomer(id); // Add this method if you store links
+
+            _customerRepo.DeleteCustomer(id);
+            return NoContent(); // 204
+        }
+
+        [HttpGet]
+        public ActionResult<List<CustomerDto>> GetAllCustomers()
+        {
+            var customers = _customerRepo.GetAllCustomers().ToList(); // fix: eager load
+
+            if (customers == null || !customers.Any())
+                return NotFound("No customers found.");
+
+            var customerDtos = customers.Select(c =>
+            {
+                var deliveryDates = _customerService.GetDeliveryDatesForCustomer(c.CustomerId);
+                var deliveryDateList = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
+                return MapToCustomerDto(c, deliveryDateList);
+            }).ToList();
+
+            return Ok(customerDtos);
+        }
+
+
+
+
+
+
 
         // Helper to map Customer to DTO
         private CustomerDto MapToCustomerDto(Customer customer, List<DateTime> deliveryDates)

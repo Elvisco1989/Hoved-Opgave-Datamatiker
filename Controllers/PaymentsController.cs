@@ -25,7 +25,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             if (order == null)
                 return NotFound("Order not found");
 
-            var intent = _paymentService.CreateAndAttachPaymentInten(order.TotalAmount);
+            var intent = _paymentService.CreateAndAttachPaymentIntent(order);
 
             return Ok(new
             {
