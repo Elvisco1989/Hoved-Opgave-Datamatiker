@@ -15,17 +15,18 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         private readonly IOrderRepo _repo;
         private readonly ICustomerRepo _customerRepo;
         private IProductRepo _productRepo;
-        private ICustomerService customerService;
+        private ICustomerService _customerService;
         private IBasketService _basketService;
         private readonly IOrderService _orderService;
 
-        public OrdersController(IOrderRepo repo, ICustomerRepo customerRepo, IProductRepo productRepo, IBasketService basketService, IOrderService orderService)
+        public OrdersController(IOrderRepo repo, ICustomerRepo customerRepo, IProductRepo productRepo, IBasketService basketService, IOrderService orderService, ICustomerService customerService)
         {
             _repo = repo;
             _customerRepo = customerRepo;
             _productRepo = productRepo;
             _basketService = basketService;
             _orderService = orderService;
+            _customerService = customerService;
         }
 
 
@@ -63,36 +64,44 @@ namespace Hoved_Opgave_Datamatiker.Controllers
 
 
 
-       [HttpGet("{id}")]
-        public ActionResult<OrderSummaryDto> GetOrderById(int id)
+        [HttpGet("{id}")]
+        public ActionResult<OrderSumDto> GetOrderById(int id)
         {
             var order = _repo.GetOrderid(id);
-            if (order == null) return NotFound();
+            if (order == null) return NotFound("Order not found");
 
             var customer = _customerRepo.GetCustomerById(order.customerId);
-            if (customer == null) return NotFound();
+            if (customer == null) return NotFound("Customer not found");
 
-            var deliveryDates = customerService.GetDeliveryDatesForCustomer(customer.CustomerId);
-            var nextDate = deliveryDates.OrderBy(d => d.DeliveryDate).FirstOrDefault()?.DeliveryDate;
+            // Get future delivery dates and pick the next available
+            var deliveryDates = _customerService?.GetDeliveryDatesForCustomer(customer.CustomerId);
+            var nextDate = deliveryDates?
+                .Where(d => d.DeliveryDate > DateTime.Today)
+                .OrderBy(d => d.DeliveryDate)
+                .FirstOrDefault()?.DeliveryDate ?? DateTime.Today.AddDays(7); // fallback if no dates
 
+            // Build product list with total per item
             var products = order.OrderItems.Select(oi =>
             {
                 var product = _productRepo.Getproduct(oi.ProductId);
+                if (product == null) return null;
+
                 return new ProductOrderSummaryDto
                 {
                     ProductName = product.Name,
                     Price = (int)product.Price,
                     Quantity = oi.Quantity
                 };
-            }).ToList();
+            }).Where(p => p != null).ToList();
 
+            // Construct final order summary
             var summary = new OrderSumDto
             {
                 CustomerId = customer.CustomerId,
                 CustomerName = customer.Name,
                 CustomerAddress = customer.Address,
-                NextDeliveryDate = nextDate ?? DateTime.MinValue,
                 OrderId = order.OrderId,
+                NextDeliveryDate = nextDate,
                 Products = products
             };
 
