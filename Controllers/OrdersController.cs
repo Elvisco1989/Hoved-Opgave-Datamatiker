@@ -4,6 +4,7 @@ using Hoved_Opgave_Datamatiker.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Hoved_Opgave_Datamatiker.Services;
+using Stripe.Climate;
 
 namespace Hoved_Opgave_Datamatiker.Controllers
 {
@@ -15,56 +16,54 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         private readonly ICustomerRepo _customerRepo;
         private IProductRepo _productRepo;
         private ICustomerService customerService;
+        private IBasketService _basketService;
+        private readonly IOrderService _orderService;
 
-        public OrdersController(IOrderRepo repo, ICustomerRepo customerRepo, IProductRepo productRepo)
+        public OrdersController(IOrderRepo repo, ICustomerRepo customerRepo, IProductRepo productRepo, IBasketService basketService, IOrderService orderService)
         {
             _repo = repo;
             _customerRepo = customerRepo;
             _productRepo = productRepo;
+            _basketService = basketService;
+            _orderService = orderService;
         }
 
-        [HttpPost]
-        public ActionResult<OrderDto> PlaceOrder([FromBody] CreateOrderDto dto)
+
+
+        [HttpPost("{customerId}/checkout")]
+        public IActionResult Checkout(int customerId)
         {
-            var customer = _customerRepo.GetCustomerById(dto.CustomerId);
-            if (customer == null)
-                return NotFound("Customer not found.");
+            var customer = _customerRepo.GetCustomerById(customerId);
+            if (customer == null) return NotFound("Customer not found");
 
-            var order = new Order
+            var basket = _basketService.GetBasket(customerId);
+            if (basket.Count == 0) return BadRequest("Basket is empty");
+
+            // Create a new order in the database
+            var createdOrder = _orderService.CreateOrder(customerId);
+
+            // Add each basket item to the order
+            foreach (var item in basket)
             {
-                customerId = dto.CustomerId,
-                OrderItems = dto.OrderItems.Select(oi =>
-                {
-                    var product = _productRepo.Getproduct(oi.ProductId);
-                    return new OrderItem
-                    {
-                        ProductId = oi.ProductId,
-                        Quantity = oi.Quantity,
-                        Product = product
-                    };
-                }).ToList()
-            };
+                _orderService.AddProductToOrderDB(createdOrder.OrderId, item.Product, item.Quantity);
+            }
 
-            var createdOrder = _repo.AddOrder(order);
-            customer.Orders.Add(createdOrder);
+            // Optionally recalculate total (already done in AddProductToOrderDB)
 
-            var orderDto = new OrderDto
+            _basketService.ClearBasket(customerId);
+
+            return Ok(new
             {
-                OrderId = createdOrder.OrderId,
-                CustomerId = createdOrder.customerId,
-                OrderItems = createdOrder.OrderItems.Select(oi => new OrderItemDto
-                {
-                    ProductId = oi.ProductId,
-                    Quantity = oi.Quantity,
-                    Product = null // or omit this field in DTO
-                }).ToList()
-            };
-
-            return CreatedAtAction(nameof(GetOrderById), new { id = createdOrder.OrderId }, orderDto);
-
-
+                createdOrder.OrderId,
+                createdOrder.TotalAmount,
+                Message = "Order placed successfully"
+            });
         }
-        [HttpGet("{id}")]
+
+
+
+
+       [HttpGet("{id}")]
         public ActionResult<OrderSummaryDto> GetOrderById(int id)
         {
             var order = _repo.GetOrderid(id);

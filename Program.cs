@@ -31,7 +31,13 @@ builder.Services.AddScoped<PaymentService>();
 
 builder.Services.AddScoped<IDeliveryDateService, DeliveryDateService>();
 builder.Services.AddSingleton<IDeliveryDateRepo, DeliveryDateRepo>();
-builder.Services.AddSingleton<IProductRepo, ProductRepo>();
+//builder.Services.AddSingleton<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<IProductRepo, ProductDBrepo>();
+builder.Services.AddSingleton<IBasketService, BasketService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+
+
 
 //builder.Services.AddSingleton<IOrderRepo, OrderRepo>();
 builder.Services.AddScoped<IOrderRepo, OrderDBrepo>();

@@ -1,7 +1,9 @@
-﻿using Hoved_Opgave_Datamatiker.Pay;
+﻿using Hoved_Opgave_Datamatiker.DBContext;
+using Hoved_Opgave_Datamatiker.Pay;
 using Hoved_Opgave_Datamatiker.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hoved_Opgave_Datamatiker.Controllers
 {
@@ -10,26 +12,30 @@ namespace Hoved_Opgave_Datamatiker.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly PaymentService _paymentService;
-        private readonly IOrderService _orderService;
+        private readonly AppDBContext _context;
 
-        public PaymentsController(PaymentService paymentService, IOrderService orderService)
+        public PaymentsController(PaymentService paymentService, AppDBContext context)
         {
             _paymentService = paymentService;
-            _orderService = orderService;
+            _context = context;
         }
 
-        [HttpPost("create-payment-intent")]
-        public IActionResult CreatePaymentIntent([FromBody] int orderId)
+        [HttpPost("{orderId}")]
+        public IActionResult CreatePaymentIntent(int orderId)
         {
-            var order = _orderService.GetOrderById(orderId);
-            if (order == null)
-                return NotFound("Order not found");
+            var order = _context.Orders
+                                .Include(o => o.OrderItems)
+                                .ThenInclude(i => i.Product)
+                                .FirstOrDefault(o => o.OrderId == orderId);
+
+            if (order == null) return NotFound("Order not found");
 
             var intent = _paymentService.CreateAndAttachPaymentIntent(order);
 
             return Ok(new
             {
-                clientSecret = intent.ClientSecret
+                clientSecret = intent.ClientSecret,
+                paymentIntentId = intent.Id
             });
         }
     }
