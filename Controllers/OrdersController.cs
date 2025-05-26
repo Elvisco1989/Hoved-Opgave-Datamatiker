@@ -18,8 +18,9 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         private ICustomerService _customerService;
         private IBasketService _basketService;
         private readonly IOrderService _orderService;
+        private IDeliveryDateService _deliveryDateService;
 
-        public OrdersController(IOrderRepo repo, ICustomerRepo customerRepo, IProductRepo productRepo, IBasketService basketService, IOrderService orderService, ICustomerService customerService)
+        public OrdersController(IOrderRepo repo, ICustomerRepo customerRepo, IProductRepo productRepo, IBasketService basketService, IOrderService orderService, ICustomerService customerService, IDeliveryDateService deliveryDateService)
         {
             _repo = repo;
             _customerRepo = customerRepo;
@@ -27,7 +28,9 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             _basketService = basketService;
             _orderService = orderService;
             _customerService = customerService;
+            _deliveryDateService = deliveryDateService;
         }
+
 
 
 
@@ -40,75 +43,120 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             var basket = _basketService.GetBasket(customerId);
             if (basket.Count == 0) return BadRequest("Basket is empty");
 
-            // Create a new order in the database
-            var createdOrder = _orderService.CreateOrder(customerId);
-
-            // Add each basket item to the order
+            // Check stock availability
             foreach (var item in basket)
             {
+                var product = _productRepo.Getproduct(item.Product.Id);
+                if (product == null) return NotFound($"Product with ID {item.Product.Id} not found");
+
+                if (product.Stock < item.Quantity)
+                    return BadRequest($"Not enough stock for {product.Name}. Only {product.Stock} left.");
+            }
+
+            // Create the order
+            var createdOrder = _orderService.CreateOrder(customerId);
+
+            // Add items to order & reduce stock
+            foreach (var item in basket)
+            {
+                var product = _productRepo.Getproduct(item.Product.Id);
+                product.Stock -= item.Quantity;
+                _productRepo.UpdateProduct(product);
                 _orderService.AddProductToOrderDB(createdOrder.OrderId, item.Product, item.Quantity);
             }
 
-            // Optionally recalculate total (already done in AddProductToOrderDB)
-
             _basketService.ClearBasket(customerId);
+
+            // Get next delivery date based on customer segment
+            DateTime? nextDelivery = null;
+            if (Enum.TryParse<Segment>(customer.Segment, out var segmentEnum))
+            {
+                var deliveryDates = _deliveryDateService.GetDeliveryDatesForSegmentDB(segmentEnum, 10)
+                                                         .Select(d => d.DeliveryDate)
+                                                         .Where(d => d >= DateTime.Today)
+                                                         .OrderBy(d => d)
+                                                         .ToList();
+
+                nextDelivery = deliveryDates.FirstOrDefault();
+            }
 
             return Ok(new
             {
-                createdOrder.OrderId,
-                createdOrder.TotalAmount,
-                Message = "Order placed successfully"
+                orderId = createdOrder.OrderId,
+                customerName = createdOrder.Customer.Name,
+                customerAddress = createdOrder.Customer.Address,
+                customerEmail = createdOrder.Customer.Email,
+                customerSegment = customer.Segment,
+                deliveryDates = customer.CustomerDeliveryDates.Select(d => d.DeliveryDate), // assuming this is populated
+                paymentStatus = createdOrder.PaymentStatus,
+                totalAmount = createdOrder.TotalAmount,
+                nextDeliveryDate = nextDelivery ?? DateTime.UtcNow.AddDays(7),
+                products = createdOrder.OrderItems.Select(item => new
+                {
+                    productName = item.Product.Name,
+                    quantity = item.Quantity,
+                    price = item.UnitPrice / 100m,
+                    total = (item.UnitPrice * item.Quantity) / 100m
+                }).ToList(),
+                orderTotal = createdOrder.TotalAmount,
+                message = "Order placed successfully"
             });
         }
 
 
+    
 
 
-        [HttpGet("{id}")]
-        public ActionResult<OrderSumDto> GetOrderById(int id)
+
+
+
+    [HttpGet("{id}")]
+    public ActionResult<OrderSumDto> GetOrderById(int id)
+    {
+        var order = _repo.GetOrderid(id);
+        if (order == null) return NotFound("Order not found");
+
+        var customer = _customerRepo.GetCustomerById(order.customerId);
+        if (customer == null) return NotFound("Customer not found");
+
+        // Get future delivery dates and pick the next available
+        var deliveryDates = _customerService?.GetDeliveryDatesForCustomer(customer.CustomerId);
+        var nextDate = deliveryDates?
+            .Where(d => d.DeliveryDate > DateTime.Today)
+            .OrderBy(d => d.DeliveryDate)
+            .FirstOrDefault()?.DeliveryDate ?? DateTime.Today.AddDays(7); // fallback if no dates
+
+        // Build product list with total per item
+        var products = order.OrderItems.Select(oi =>
         {
-            var order = _repo.GetOrderid(id);
-            if (order == null) return NotFound("Order not found");
+            var product = _productRepo.Getproduct(oi.ProductId);
+            if (product == null) return null;
 
-            var customer = _customerRepo.GetCustomerById(order.customerId);
-            if (customer == null) return NotFound("Customer not found");
-
-            // Get future delivery dates and pick the next available
-            var deliveryDates = _customerService?.GetDeliveryDatesForCustomer(customer.CustomerId);
-            var nextDate = deliveryDates?
-                .Where(d => d.DeliveryDate > DateTime.Today)
-                .OrderBy(d => d.DeliveryDate)
-                .FirstOrDefault()?.DeliveryDate ?? DateTime.Today.AddDays(7); // fallback if no dates
-
-            // Build product list with total per item
-            var products = order.OrderItems.Select(oi =>
+            return new ProductOrderSummaryDto
             {
-                var product = _productRepo.Getproduct(oi.ProductId);
-                if (product == null) return null;
-
-                return new ProductOrderSummaryDto
-                {
-                    ProductName = product.Name,
-                    Price = (int)product.Price,
-                    Quantity = oi.Quantity
-                };
-            }).Where(p => p != null).ToList();
-
-            // Construct final order summary
-            var summary = new OrderSumDto
-            {
-                CustomerId = customer.CustomerId,
-                CustomerName = customer.Name,
-                CustomerAddress = customer.Address,
-                OrderId = order.OrderId,
-                NextDeliveryDate = nextDate,
-                Products = products
+                ProductName = product.Name,
+                Price = (int)product.Price,
+                Quantity = oi.Quantity
             };
+        }).Where(p => p != null).ToList();
 
-            return Ok(summary);
-        }
+        // Construct final order summary
+        var summary = new OrderSumDto
+        {
+            CustomerId = customer.CustomerId,
+            CustomerName = customer.Name,
+            CustomerAddress = customer.Address,
+            OrderId = order.OrderId,
+            NextDeliveryDate = nextDate,
+            Products = products
+        };
 
-
-
+        return Ok(summary);
     }
+
+}
+
+
+
+    
 }

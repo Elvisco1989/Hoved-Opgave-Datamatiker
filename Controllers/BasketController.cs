@@ -24,6 +24,8 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         public IActionResult AddToBasket(int customerId, [FromBody] BasketItemDto item)
         {
             var product = _productRepo.Getproduct(item.ProductId);
+
+          
             if (product == null) return NotFound("Product not found");
 
             _basketService.AddToBasket(customerId, product, item.Quantity);

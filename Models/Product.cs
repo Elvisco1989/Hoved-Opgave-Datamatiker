@@ -15,6 +15,8 @@ namespace Hoved_Opgave_Datamatiker.Models
         [Required]
         public decimal Price { get; set; }
 
+        public int Stock { get; set; }
+
         public List<OrderItem> OrderItems { get; set; } = new();
 
 

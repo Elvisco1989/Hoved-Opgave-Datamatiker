@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoved-Opgave-Datamatiker", "Hoved-Opgave-Datamatiker.csproj", "{3130E861-C951-43F0-BB66-98611C1E824B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hoved-Opgave-Datamatiker", "Hoved-Opgave-Datamatiker.csproj", "{3130E861-C951-43F0-BB66-98611C1E824B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HovedOpgaveTestProject", "..\TestProject3\HovedOpgaveTestProject.csproj", "{C98890D5-0890-4113-B957-4542AA3DE1ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{3130E861-C951-43F0-BB66-98611C1E824B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3130E861-C951-43F0-BB66-98611C1E824B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3130E861-C951-43F0-BB66-98611C1E824B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C98890D5-0890-4113-B957-4542AA3DE1ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C98890D5-0890-4113-B957-4542AA3DE1ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C98890D5-0890-4113-B957-4542AA3DE1ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C98890D5-0890-4113-B957-4542AA3DE1ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

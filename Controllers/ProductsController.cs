@@ -27,6 +27,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
                     Name = p.Name,
                     Price = p.Price,
                     Description = p.Description,
+                    Stock = p.Stock,
                    
                 })
                 .ToList();
@@ -46,6 +47,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
                 Name = p.Name,
                 Price = p.Price,
                 Description = p.Description,
+                Stock = p.Stock,
               
             };
 
@@ -62,6 +64,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
                 Name = dto.Name,
                 Price = dto.Price,
                 Description = dto.Description,
+                Stock = dto.Stock,
               
             };
 
@@ -86,6 +89,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
                 Name = dto.Name,
                 Price = dto.Price,
                 Description = dto.Description,
+                Stock = dto.Stock,
                
             };
 

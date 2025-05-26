@@ -7,7 +7,7 @@ namespace Hoved_Opgave_Datamatiker.Repository
         private int _nextId = 6;
         private List<Customer> _customers = new List<Customer>
         {
-            new Customer{ Name = "Elvis Mbah", Address="Taastrup", CustomerId=1, Email="mbah@ndum", PhoneNumber="45034658", Segment="Monday"},
+            new Customer{ Name = "Elvis", Address="Taastrup", CustomerId=1, Email="mbah@ndum", PhoneNumber="45034658", Segment="Monday"},
             new Customer{ Name = "Elvis Ndum", Address="Farum", CustomerId=2, Email="mbah@ndum", PhoneNumber="45034658", Segment="Tuesday"},
             new Customer{ Name = "Elvis Mbah", Address="Copenhagen", CustomerId=3, Email="mbah@ndum", PhoneNumber="45034658", Segment="Wednesday"},
             new Customer{ Name = "Elvis Mbah", Address="Ishøj", CustomerId=4, Email="mbah@ndum", PhoneNumber="45034658", Segment="Thursday"},

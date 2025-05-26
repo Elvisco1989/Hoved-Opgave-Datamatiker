@@ -18,21 +18,7 @@ namespace Hoved_Opgave_Datamatiker.Repository.DBRepos
             return order;
         }
 
-        //public void AddProductToOrder(int orderId, Product product, int quantity)
-        //{
-        //    var order = _Context.Orders.FirstOrDefault(o => o.OrderId == orderId);
-        //    if (order != null)
-        //    {
-        //        var orderItem = new OrderItem
-        //        {
-        //            OrderId = orderId,
-        //            ProductId = product.Id,
-        //            Product = product,
-        //            Quantity = quantity
-        //        };
-        //        order.OrderItems.Add(orderItem);
-        //    }
-        //}
+       
 
         public Order? DeleteOrder(int id)
         {
@@ -46,10 +32,7 @@ namespace Hoved_Opgave_Datamatiker.Repository.DBRepos
 
         }
 
-        //public Order GetOrder(int orderId)
-        //{
-        //    throw new NotImplementedException();
-        //}
+      
 
         public Order GetOrderid(int id)
         {

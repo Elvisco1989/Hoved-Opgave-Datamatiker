@@ -11,6 +11,9 @@ namespace Hoved_Opgave_Datamatiker.Services
         void UpdatePaymentStatus(int orderId, string status);
         void DeleteOrder(int orderId);
         void AddProductToOrder(int orderId, Product product, int quantity);
-       
+
+        //IEnumerable<OrderItem> GetOrderItems(int orderId);
+
+
     }
 }

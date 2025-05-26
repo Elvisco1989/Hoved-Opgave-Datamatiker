@@ -20,7 +20,10 @@ namespace Hoved_Opgave_Datamatiker.Services
             {
                 customerId = customerId,
                 OrderDate = DateTime.UtcNow,
-                PaymentStatus = "Pending"
+                PaymentStatus = "Pending",
+                UnitPrice = 0, // Set default or calculated value
+                TotalAmount = 0, // Set default or calculated value
+                OrderItems = new List<OrderItem>()
             };
 
             _Context.Orders.Add(order);
@@ -38,19 +41,33 @@ namespace Hoved_Opgave_Datamatiker.Services
 
             if (order != null)
             {
-                var orderItem = new OrderItem
-                {
-                    OrderId = orderId,
-                    ProductId = product.Id,
-                    Quantity = quantity,
-                    UnitPrice = (int)product.Price
-                };
+                var existingItem = order.OrderItems
+                    .FirstOrDefault(oi => oi.ProductId == product.Id);
 
-                order.OrderItems.Add(orderItem);
+                if (existingItem != null)
+                {
+                    // If the item exists, just update the quantity
+                    existingItem.Quantity += quantity;
+                }
+                else
+                {
+                    // Otherwise, add a new item
+                    var orderItem = new OrderItem
+                    {
+                        OrderId = orderId,
+                        ProductId = product.Id,
+                        Quantity = quantity,
+                        UnitPrice = (int)product.Price
+                    };
+
+                    order.OrderItems.Add(orderItem);
+                }
+
                 UpdateTotalAmount(order);
                 _Context.SaveChanges();
             }
         }
+
 
         // ✅ Helper to calculate order total
         private void UpdateTotalAmount(Order order)
@@ -109,6 +126,15 @@ namespace Hoved_Opgave_Datamatiker.Services
         {
             throw new NotImplementedException();
         }
+
+
+        //public IEnumerable<OrderItem> GetOrderItems(int orderId)
+        //{
+        //    return _Context.OrderItems
+        //        .Include(oi => oi.Product)
+        //        .Where(oi => oi.OrderId == orderId)
+        //        .ToList();
+        //}
     }
 
 }

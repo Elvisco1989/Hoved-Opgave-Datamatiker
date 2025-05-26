@@ -10,6 +10,8 @@
 
         public string Email { get; set; } = string.Empty;
 
+        public List<DateTime> DeliveryDates { get; set; } = new();
+
         public string Segment { get; set; } // Example: "Monday", "Tuesday", etc.
     }
 }

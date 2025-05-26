@@ -53,6 +53,8 @@ namespace Hoved_Opgave_Datamatiker.Repository.DBRepos
                 existingProduct.Name = product.Name;
                 existingProduct.Price = product.Price;
                 existingProduct.Description = product.Description;
+                existingProduct.Stock = product.Stock;
+
                 // Update other fields as needed
 
                 _Context.SaveChanges();

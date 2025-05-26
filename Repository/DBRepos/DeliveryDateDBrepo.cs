@@ -39,15 +39,7 @@ namespace Hoved_Opgave_Datamatiker.Repository.DBRepos
             return _context.DeliveryDates.Find(id);
         }
 
-        //public List<DeliveryDates> GetDeliveryDatesForSegment(Segment segment, int count)
-        //{
-        //    DayOfWeek targetDay = (DayOfWeek)segment;
-        //    return _context.DeliveryDates
-        //                   .Where(d => d.DeliveryDate.DayOfWeek == targetDay)
-        //                   .OrderBy(d => d.DeliveryDate)
-        //                   .Take(count)
-        //                   .ToList();
-        //}
+       
 
         public void UpdateDeliveryDate(DeliveryDates deliveryDate)
         {
