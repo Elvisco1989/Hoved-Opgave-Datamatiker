@@ -1,12 +1,17 @@
+using Hoved_Opgave_Datamatiker.APPDBContext;
 using Hoved_Opgave_Datamatiker.DBContext;
 using Hoved_Opgave_Datamatiker.Interfaces;
 using Hoved_Opgave_Datamatiker.Pay;
 using Hoved_Opgave_Datamatiker.Repository;
 using Hoved_Opgave_Datamatiker.Repository.DBRepos;
 using Hoved_Opgave_Datamatiker.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Stripe;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +36,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
+ 
 });
 
 
@@ -59,6 +65,14 @@ builder.Services.AddScoped<IOrderRepo, OrderDBrepo>();
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDbContext<LoginDBContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("Login")));
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<LoginDBContext>()
+
+.AddEntityFrameworkStores<LoginDBContext>()
+.AddDefaultTokenProviders();
+builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
@@ -71,7 +85,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles(); // This enables wwwroot serving
+
+
 app.UseCors();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

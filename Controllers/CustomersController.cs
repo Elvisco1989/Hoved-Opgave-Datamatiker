@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hoved_Opgave_Datamatiker.Controllers
 {
+    /// <summary>
+    /// Controller til håndtering af kunder og deres levering.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
@@ -18,7 +21,16 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         private readonly IDeliveryDateService _deliveryDateService;
         private readonly AppDBContext context;
 
-        public CustomersController(ICustomerRepo customerRepo, IDeliveryDateRepo deliveryDateRepo, IProductRepo productRepo, ICustomerService customerService, IDeliveryDateService deliveryDateService, AppDBContext context)
+        /// <summary>
+        /// Initialiserer en ny instans af <see cref="CustomersController"/>.
+        /// </summary>
+        public CustomersController(
+            ICustomerRepo customerRepo,
+            IDeliveryDateRepo deliveryDateRepo,
+            IProductRepo productRepo,
+            ICustomerService customerService,
+            IDeliveryDateService deliveryDateService,
+            AppDBContext context)
         {
             _customerRepo = customerRepo;
             _deliveryDateRepo = deliveryDateRepo;
@@ -28,128 +40,14 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             this.context = context;
         }
 
-        //// GET: api/customers
-        //[HttpGet]
-        //public ActionResult<List<CustomerDto>> GetAllCustomers()
-        //{
-        //    var customers = _customerRepo.GetAllCustomers();
-
-        //    if (customers == null || !customers.Any())
-        //        return NotFound("No customers found.");
-
-        //    var customerDtos = customers.Select(c =>
-        //    {
-        //        var deliveryDates = _customerService.GetDeliveryDatesForCustomer(c.CustomerId);
-        //        var deliveryDateList = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
-
-        //        return MapToCustomerDto(c, deliveryDateList);
-        //    }).ToList();
-
-        //    return Ok(customerDtos);
-        //}
-
-
-
-
-        // GET: api/customers
-        //[HttpGet]
-        //public ActionResult<List<CustomerDto>> GetAllCustomers()
-        //{
-        //    var customers = _customerRepo.GetAllCustomers();
-
-        //    if (customers == null || !customers.Any())
-        //        return NotFound("No customers found.");
-
-        //    var customerDtos = customers.Select(c =>
-        //    {
-        //        var deliveryDates = _customerService.GetDeliveryDatesForCustomer(c.CustomerId);
-        //        var deliveryDateList = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
-
-        //        return MapToCustomerDto(c, deliveryDateList);
-        //    }).ToList();
-
-        //    return Ok(customerDtos);
-        //}
-
-
-
-
-
-
-
-
-
-        // GET: api/customers/5
-        [HttpGet("{id}")]
-        public ActionResult<CustomerDto> GetCustomerById(int id)
-        {
-            var customer = _customerRepo.GetCustomerById(id);
-
-            if (customer == null)
-                return NotFound($"Customer with ID {id} not found.");
-
-            var deliveryDates = _customerService.GetDeliveryDatesForCustomer(id);
-            var dateTimes = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
-
-            return Ok(MapToCustomerDto(customer, dateTimes));
-        }
-
-
-        // POST: api/customers
-        [HttpPost]
-        [HttpPost]
-        public ActionResult<CustomerDto> AddCustomer([FromBody] CreateCustomer createCustomer)
-        {
-            var customer = new Customer
-            {
-                Name = createCustomer.Name,
-                Address = createCustomer.Address,
-                Segment = createCustomer.Segment,
-                PhoneNumber = createCustomer.PhoneNumber,
-                Email = createCustomer.Email
-            };
-
-            // Add the customer to the repository
-            var addedCustomer = _customerRepo.AddCustomer(customer);
-
-            // Assign delivery dates based on the customer's segment
-            if (Enum.TryParse<Segment>(customer.Segment, out var segmentEnum))
-            {
-                var matchingDates = _deliveryDateService.GetDeliveryDatesForSegmentDB(segmentEnum, 10);
-
-                // Assign delivery dates to the customer
-                _customerService.AssignDeliveryDates(addedCustomer, matchingDates);
-
-                // Get the DateTime values directly from the `matchingDates`
-                var deliveryDateList = matchingDates.Select(dd => dd.DeliveryDate).ToList();
-
-                // Return the mapped customer with delivery dates
-                return CreatedAtAction(nameof(GetCustomerById), new { id = addedCustomer.CustomerId }, MapToCustomerDto(addedCustomer, deliveryDateList));
-            }
-
-            return BadRequest("Invalid segment value.");
-        }
-
-        // DELETE: api/customers/5
-        [HttpDelete("{id}")]
-        public IActionResult DeleteCustomer(int id)
-        {
-            var customer = _customerRepo.GetCustomerById(id);
-
-            if (customer == null)
-                return NotFound($"Customer with ID {id} not found.");
-
-            // Optionally clear delivery date links from service (if needed)
-            // _customerService.RemoveDeliveryDatesForCustomer(id); // Add this method if you store links
-
-            _customerRepo.DeleteCustomer(id);
-            return NoContent(); // 204
-        }
-
+        /// <summary>
+        /// Henter alle kunder med tilknyttede leveringsdatoer og ordrer.
+        /// </summary>
+        /// <returns>En liste af <see cref="CustomerDto"/> objekter.</returns>
         [HttpGet]
         public ActionResult<List<CustomerDto>> GetAllCustomers()
         {
-            var customers = _customerRepo.GetAllCustomers().ToList(); // fix: eager load
+            var customers = _customerRepo.GetAllCustomers().ToList();
 
             if (customers == null || !customers.Any())
                 return NotFound("No customers found.");
@@ -164,13 +62,79 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             return Ok(customerDtos);
         }
 
+        /// <summary>
+        /// Henter en kunde med tilhørende leveringsdatoer og ordrer baseret på ID.
+        /// </summary>
+        /// <param name="id">Kundens ID.</param>
+        /// <returns>En <see cref="CustomerDto"/> hvis fundet, ellers 404.</returns>
+        [HttpGet("{id}")]
+        public ActionResult<CustomerDto> GetCustomerById(int id)
+        {
+            var customer = _customerRepo.GetCustomerById(id);
 
+            if (customer == null)
+                return NotFound($"Customer with ID {id} not found.");
 
+            var deliveryDates = _customerService.GetDeliveryDatesForCustomer(id);
+            var dateTimes = deliveryDates.Select(dd => dd.DeliveryDate).ToList();
 
+            return Ok(MapToCustomerDto(customer, dateTimes));
+        }
 
+        /// <summary>
+        /// Tilføjer en ny kunde og tildeler leveringsdatoer baseret på segment.
+        /// </summary>
+        /// <param name="createCustomer">Data til oprettelse af kunden.</param>
+        /// <returns>Den oprettede kunde som <see cref="CustomerDto"/>.</returns>
+        [HttpPost]
+        public ActionResult<CustomerDto> AddCustomer([FromBody] CreateCustomer createCustomer)
+        {
+            var customer = new Customer
+            {
+                Name = createCustomer.Name,
+                Address = createCustomer.Address,
+                Segment = createCustomer.Segment,
+                PhoneNumber = createCustomer.PhoneNumber,
+                Email = createCustomer.Email
+            };
 
+            var addedCustomer = _customerRepo.AddCustomer(customer);
 
-        // Helper to map Customer to DTO
+            if (Enum.TryParse<Segment>(customer.Segment, out var segmentEnum))
+            {
+                var matchingDates = _deliveryDateService.GetDeliveryDatesForSegmentDB(segmentEnum, 10);
+                _customerService.AssignDeliveryDates(addedCustomer, matchingDates);
+                var deliveryDateList = matchingDates.Select(dd => dd.DeliveryDate).ToList();
+
+                return CreatedAtAction(nameof(GetCustomerById), new { id = addedCustomer.CustomerId }, MapToCustomerDto(addedCustomer, deliveryDateList));
+            }
+
+            return BadRequest("Invalid segment value.");
+        }
+
+        /// <summary>
+        /// Sletter en kunde baseret på ID.
+        /// </summary>
+        /// <param name="id">Kundens ID.</param>
+        /// <returns>Statuskode 204 ved succes, 404 hvis ikke fundet.</returns>
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCustomer(int id)
+        {
+            var customer = _customerRepo.GetCustomerById(id);
+
+            if (customer == null)
+                return NotFound($"Customer with ID {id} not found.");
+
+            _customerRepo.DeleteCustomer(id);
+            return NoContent(); // 204
+        }
+
+        /// <summary>
+        /// Mapper en <see cref="Customer"/> til en <see cref="CustomerDto"/>, inkl. produkter i ordrer.
+        /// </summary>
+        /// <param name="customer">Kundeobjektet.</param>
+        /// <param name="deliveryDates">Liste af leveringsdatoer.</param>
+        /// <returns>Et <see cref="CustomerDto"/> objekt.</returns>
         private CustomerDto MapToCustomerDto(Customer customer, List<DateTime> deliveryDates)
         {
             foreach (var order in customer.Orders)
@@ -207,6 +171,5 @@ namespace Hoved_Opgave_Datamatiker.Controllers
                 }).ToList()
             };
         }
-
     }
 }

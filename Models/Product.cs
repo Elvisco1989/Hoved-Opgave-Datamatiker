@@ -17,6 +17,10 @@ namespace Hoved_Opgave_Datamatiker.Models
 
         public int Stock { get; set; }
 
+        // New property to store image file name or path
+        [StringLength(200)]
+        public string ImagePath { get; set; } = string.Empty;
+
         public List<OrderItem> OrderItems { get; set; } = new();
 
 
