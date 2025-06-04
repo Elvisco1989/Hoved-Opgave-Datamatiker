@@ -17,6 +17,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         private readonly ICustomerRepo _customerRepo;
         private readonly IDeliveryDateRepo _deliveryDateRepo;
         private readonly IProductRepo _productRepo;
+
         private readonly ICustomerService _customerService;
         private readonly IDeliveryDateService _deliveryDateService;
         private readonly AppDBContext context;
@@ -45,6 +46,8 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         /// </summary>
         /// <returns>En liste af <see cref="CustomerDto"/> objekter.</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(List<CustomerDto>), 200)]
+        [ProducesResponseType(404)]
         public ActionResult<List<CustomerDto>> GetAllCustomers()
         {
             var customers = _customerRepo.GetAllCustomers().ToList();
@@ -68,6 +71,8 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         /// <param name="id">Kundens ID.</param>
         /// <returns>En <see cref="CustomerDto"/> hvis fundet, ellers 404.</returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(CustomerDto), 200)]
+        [ProducesResponseType(404)]
         public ActionResult<CustomerDto> GetCustomerById(int id)
         {
             var customer = _customerRepo.GetCustomerById(id);
@@ -87,6 +92,8 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         /// <param name="createCustomer">Data til oprettelse af kunden.</param>
         /// <returns>Den oprettede kunde som <see cref="CustomerDto"/>.</returns>
         [HttpPost]
+        [ProducesResponseType(typeof(CustomerDto), 201)]
+        [ProducesResponseType(400)]
         public ActionResult<CustomerDto> AddCustomer([FromBody] CreateCustomer createCustomer)
         {
             var customer = new Customer
@@ -118,6 +125,8 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         /// <param name="id">Kundens ID.</param>
         /// <returns>Statuskode 204 ved succes, 404 hvis ikke fundet.</returns>
         [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public IActionResult DeleteCustomer(int id)
         {
             var customer = _customerRepo.GetCustomerById(id);
