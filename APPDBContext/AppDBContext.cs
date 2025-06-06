@@ -3,6 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoved_Opgave_Datamatiker.DBContext
 {
+    /// <summary>
+    /// Entity Framework Core database context for the application.
+    /// Provides DbSet properties for Customer, Product, Order, DeliveryDates,
+    /// CustomerDeliveryDates, and OrderItem entities.
+    /// Configures composite keys and relationships between entities.
+    /// </summary>
     public class AppDBContext : DbContext
     {
         public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
@@ -54,10 +60,5 @@ namespace Hoved_Opgave_Datamatiker.DBContext
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(oi => oi.ProductId);
         }
-
-
-
-
-
     }
 }
