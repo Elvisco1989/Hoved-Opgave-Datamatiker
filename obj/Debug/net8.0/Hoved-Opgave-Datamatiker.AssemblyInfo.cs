@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Hoved-Opgave-Datamatiker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1a80dbbae52cfee3ef7a81fff8ad784152b8825e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4754f6f71033b8267b6d7c1139acc045999ce73a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Hoved-Opgave-Datamatiker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Hoved-Opgave-Datamatiker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
