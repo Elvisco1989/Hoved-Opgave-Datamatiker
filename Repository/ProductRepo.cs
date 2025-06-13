@@ -84,5 +84,10 @@ namespace Hoved_Opgave_Datamatiker.Repository
         {
             return products;
         }
+
+        public Product? Delete(Product product)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -161,5 +161,32 @@ namespace Hoved_Opgave_Datamatiker.Controllers
 
             return Ok(summary);
         }
+
+        [HttpGet("products/top-sales")]
+        public IActionResult GetTopSales()
+        {
+            var products = _orderService.GetTopSellingProducts();
+            return Ok(products);
+        }
+
+        [HttpGet("customers/top")]
+        public ActionResult<List<TopCustomerDto>> GetTopCustomers()
+        {
+            var topCustomers = _orderService.GetTopCustomers();
+            return Ok(topCustomers);
+        }
+
+        [HttpGet("summary")]
+        public ActionResult<OrderMonthSummaryDto> GetOrderSummary()
+        {
+            return Ok(_orderService.GetOrderSummary());
+        }
+
+
+
+
+
+
+
     }
 }

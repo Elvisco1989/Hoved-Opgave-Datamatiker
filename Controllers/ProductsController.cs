@@ -1,6 +1,7 @@
 ﻿using Hoved_Opgave_Datamatiker.Models;
 using Hoved_Opgave_Datamatiker.Models.Dto;
 using Hoved_Opgave_Datamatiker.Repository;
+using Hoved_Opgave_Datamatiker.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoved_Opgave_Datamatiker.Controllers
@@ -13,14 +14,16 @@ namespace Hoved_Opgave_Datamatiker.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepo _repo;
+        private readonly IProductService _productService;
 
         /// <summary>
         /// Initialiserer en ny instans af <see cref="ProductsController"/>.
         /// </summary>
         /// <param name="repo">Produktrepository til databaseadgang.</param>
-        public ProductsController(IProductRepo repo)
+        public ProductsController(IProductRepo repo, IProductService productService)
         {
             _repo = repo;
+            _productService = productService;
         }
 
         /// <summary>
@@ -120,5 +123,25 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             _repo.UpdateProduct(updated);
             return NoContent();
         }
+
+        [HttpDelete("products/{id}")]
+        public IActionResult DeleteProduct(int id)
+        {
+            var product = _repo.Getproduct(id); // Get product by ID
+            if (product == null)
+                return NotFound(); // 404 if product not found
+
+            _repo.Delete(product); // Call delete method
+            return NoContent(); // 204 success, no body
+        }
+
+
+        [HttpGet("low-stock")]
+        public IActionResult GetLowStockProducts()
+        {
+            var lowStock = _productService.GetLowStockProducts();
+            return Ok(lowStock);
+        }
+
     }
 }

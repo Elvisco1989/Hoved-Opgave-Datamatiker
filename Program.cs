@@ -18,14 +18,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+//builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 
-// Register StripeClient as a singleton
-builder.Services.AddSingleton<IStripeClient>(sp =>
-{
-    var stripeSettings = sp.GetRequiredService<IOptions<StripeSettings>>().Value;
-    return new StripeClient(stripeSettings.SecretKey);
-});
+//// Register StripeClient as a singleton
+//builder.Services.AddSingleton<IStripeClient>(sp =>
+//{
+//    var stripeSettings = sp.GetRequiredService<IOptions<StripeSettings>>().Value;
+//    return new StripeClient(stripeSettings.SecretKey);
+//});
 
 
 builder.Services.AddCors(options =>
@@ -48,7 +48,7 @@ builder.Services.AddSwaggerGen();
 //builder.Services.AddSingleton<ICustomerRepo, CustomerRepo>();
 builder.Services.AddScoped<ICustomerRepo, CustomerDBrepo>();
 builder.Services.AddScoped<ICustomerService, Hoved_Opgave_Datamatiker.Services.CustomerService>();
-builder.Services.AddScoped<PaymentService>();
+//builder.Services.AddScoped<PaymentService>();
 
 builder.Services.AddScoped<IDeliveryDateService, DeliveryDateService>();
 builder.Services.AddSingleton<IDeliveryDateRepo, DeliveryDateRepo>();
@@ -56,6 +56,7 @@ builder.Services.AddSingleton<IDeliveryDateRepo, DeliveryDateRepo>();
 builder.Services.AddScoped<IProductRepo, ProductDBrepo>();
 builder.Services.AddSingleton<IBasketService, BasketService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProductService, Hoved_Opgave_Datamatiker.Services.ProductService>();
 
 
 

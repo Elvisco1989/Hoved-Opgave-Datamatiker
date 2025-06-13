@@ -9,5 +9,7 @@ namespace Hoved_Opgave_Datamatiker.Repository
         Product? Getproduct(int id);
         public IEnumerable<Product> Getproducts();
         public void UpdateProduct(Product product);
+
+        public Product? Delete(Product product);
     }
 }

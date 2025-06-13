@@ -1,4 +1,5 @@
 ﻿using Hoved_Opgave_Datamatiker.Models;
+using Hoved_Opgave_Datamatiker.Models.Dto;
 
 namespace Hoved_Opgave_Datamatiker.Services
 {
@@ -11,6 +12,14 @@ namespace Hoved_Opgave_Datamatiker.Services
         void UpdatePaymentStatus(int orderId, string status);
         void DeleteOrder(int orderId);
         void AddProductToOrder(int orderId, Product product, int quantity);
+
+        List<TopSellingProductDto> GetTopSellingProducts();
+
+        List<TopCustomerDto> GetTopCustomers();
+        OrderMonthSummaryDto GetOrderSummary();
+
+
+
 
         //IEnumerable<OrderItem> GetOrderItems(int orderId);
 

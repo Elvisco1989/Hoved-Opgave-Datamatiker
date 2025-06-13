@@ -92,8 +92,10 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
                 expiration = token.ValidTo,
-                customerId = customer?.CustomerId
+                customerId = customer?.CustomerId,
+                roles = roles  // This sends the roles back to frontend
             });
+
         }
     }
 }
