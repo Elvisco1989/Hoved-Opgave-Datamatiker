@@ -6,20 +6,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoved_Opgave_Datamatiker.Services
 {
+    /// <summary>
+    /// Serviceklasse der håndterer forretningslogik for ordrer, 
+    /// inklusiv oprettelse, opdatering, og hentning af ordrer.
+    /// </summary>
     public class OrderService : IOrderService
     {
         private readonly AppDBContext _Context;
         private readonly IOrderRepo _orderRepo;
         private readonly IProductRepo _productRepo;
 
+<<<<<<< HEAD
         public OrderService(AppDBContext context, IOrderRepo orderRepo, IProductRepo productRepo)
+=======
+        /// <summary>
+        /// Constructor med dependency injection af databasekontekst.
+        /// </summary>
+        /// <param name="context">AppDBContext til databaseadgang.</param>
+        public OrderService(AppDBContext context)
+>>>>>>> 96b5ca0fa3cc08fe13708d7fd00ad29cda7995b3
         {
             _Context = context;
             _orderRepo = orderRepo;
             _productRepo = productRepo;
         }
 
-        // ✅ Create a new order for a customer
+        /// <summary>
+        /// Opretter en ny ordre for en bestemt kunde med tom ordreliste og status "Pending".
+        /// </summary>
+        /// <param name="customerId">ID på kunden.</param>
+        /// <returns>Den oprettede ordre.</returns>
         public Order CreateOrder(int customerId)
         {
             var order = new Order
@@ -27,8 +43,8 @@ namespace Hoved_Opgave_Datamatiker.Services
                 customerId = customerId,
                 OrderDate = DateTime.UtcNow,
                 PaymentStatus = "Pending",
-                UnitPrice = 0, // Set default or calculated value
-                TotalAmount = 0, // Set default or calculated value
+                UnitPrice = 0,
+                TotalAmount = 0,
                 OrderItems = new List<OrderItem>()
             };
 
@@ -38,7 +54,13 @@ namespace Hoved_Opgave_Datamatiker.Services
             return order;
         }
 
-        // ✅ Add a product to an existing order
+        /// <summary>
+        /// Tilføjer et produkt til en eksisterende ordre i databasen.
+        /// Hvis produktet allerede findes i ordren, øges mængden.
+        /// </summary>
+        /// <param name="orderId">ID på ordren.</param>
+        /// <param name="product">Produkt der skal tilføjes.</param>
+        /// <param name="quantity">Antal af produktet.</param>
         public void AddProductToOrderDB(int orderId, Product product, int quantity)
         {
             var order = _Context.Orders
@@ -52,12 +74,10 @@ namespace Hoved_Opgave_Datamatiker.Services
 
                 if (existingItem != null)
                 {
-                    // If the item exists, just update the quantity
                     existingItem.Quantity += quantity;
                 }
                 else
                 {
-                    // Otherwise, add a new item
                     var orderItem = new OrderItem
                     {
                         OrderId = orderId,
@@ -74,15 +94,22 @@ namespace Hoved_Opgave_Datamatiker.Services
             }
         }
 
-
-        // ✅ Helper to calculate order total
+        /// <summary>
+        /// Beregner den samlede pris for en ordre baseret på produkter og mængder.
+        /// Intern hjælpermetode.
+        /// </summary>
+        /// <param name="order">Ordren der skal opdateres.</param>
         private void UpdateTotalAmount(Order order)
         {
             order.TotalAmount = order.OrderItems
                                      .Sum(item => item.Quantity * item.UnitPrice);
         }
 
-        // ✅ Get a specific order
+        /// <summary>
+        /// Henter en specifik ordre med produkter baseret på ordre-ID.
+        /// </summary>
+        /// <param name="orderId">Ordre-ID.</param>
+        /// <returns>Ordren med ordrelinjer og tilknyttede produkter.</returns>
         public Order? GetOrderById(int orderId)
         {
             return _Context.Orders
@@ -91,7 +118,11 @@ namespace Hoved_Opgave_Datamatiker.Services
                            .FirstOrDefault(o => o.OrderId == orderId);
         }
 
-        // ✅ Get all orders for a customer
+        /// <summary>
+        /// Henter alle ordrer for en bestemt kunde, sorteret efter dato (nyeste først).
+        /// </summary>
+        /// <param name="customerId">ID på kunden.</param>
+        /// <returns>Liste af ordrer med produkter.</returns>
         public List<Order> GetOrdersByCustomer(int customerId)
         {
             return _Context.Orders
@@ -102,7 +133,11 @@ namespace Hoved_Opgave_Datamatiker.Services
                            .ToList();
         }
 
-        // ✅ Update payment status (e.g., after Stripe webhook)
+        /// <summary>
+        /// Opdaterer betalingsstatus for en ordre, f.eks. efter betaling via Stripe.
+        /// </summary>
+        /// <param name="orderId">Ordre-ID.</param>
+        /// <param name="status">Ny betalingsstatus (f.eks. "Paid").</param>
         public void UpdatePaymentStatus(int orderId, string status)
         {
             var order = _Context.Orders.Find(orderId);
@@ -113,7 +148,10 @@ namespace Hoved_Opgave_Datamatiker.Services
             }
         }
 
-        // ✅ Delete order if needed (optional)
+        /// <summary>
+        /// Sletter en ordre og alle dens ordrelinjer fra databasen.
+        /// </summary>
+        /// <param name="orderId">Ordre-ID der skal slettes.</param>
         public void DeleteOrder(int orderId)
         {
             var order = _Context.Orders
@@ -128,10 +166,15 @@ namespace Hoved_Opgave_Datamatiker.Services
             }
         }
 
+        /// <summary>
+        /// Ikke implementeret metode fra IOrderService interface. 
+        /// Skal evt. bruges i test-scenarier.
+        /// </summary>
         public void AddProductToOrder(int orderId, Product product, int quantity)
         {
             throw new NotImplementedException();
         }
+<<<<<<< HEAD
 
         public List<TopSellingProductDto> GetTopSellingProducts()
         {
@@ -212,6 +255,7 @@ namespace Hoved_Opgave_Datamatiker.Services
 
 
 
+=======
+>>>>>>> 96b5ca0fa3cc08fe13708d7fd00ad29cda7995b3
     }
-
 }

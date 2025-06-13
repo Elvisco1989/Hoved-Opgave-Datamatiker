@@ -21,17 +21,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
         private readonly IOrderService _orderService;
         private readonly IDeliveryDateService _deliveryDateService;
 
-        /// <summary>
-        /// Initialiserer en ny instans af <see cref="OrdersController"/>.
-        /// </summary>
-        public OrdersController(
-            IOrderRepo repo,
-            ICustomerRepo customerRepo,
-            IProductRepo productRepo,
-            IBasketService basketService,
-            IOrderService orderService,
-            ICustomerService customerService,
-            IDeliveryDateService deliveryDateService)
+        public OrdersController(IOrderRepo repo, ICustomerRepo customerRepo, IProductRepo productRepo, IBasketService basketService, IOrderService orderService, ICustomerService customerService, IDeliveryDateService deliveryDateService)
         {
             _repo = repo;
             _customerRepo = customerRepo;
@@ -42,11 +32,9 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             _deliveryDateService = deliveryDateService;
         }
 
-        /// <summary>
-        /// Gennemfører et checkout for en kunde. Validerer lager, opretter ordre og beregner næste levering.
-        /// </summary>
-        /// <param name="customerId">ID på kunden som checker ud.</param>
-        /// <returns>Et JSON-objekt med ordredetaljer, levering og produkter.</returns>
+
+
+
         [HttpPost("{customerId}/checkout")]
         public IActionResult Checkout(int customerId)
         {
@@ -56,7 +44,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             var basket = _basketService.GetBasket(customerId);
             if (basket.Count == 0) return BadRequest("Basket is empty");
 
-            // Valider produktlager
+            // Check stock availability
             foreach (var item in basket)
             {
                 var product = _productRepo.Getproduct(item.Product.Id);
@@ -69,7 +57,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             // Opret ordre
             var createdOrder = _orderService.CreateOrder(customerId);
 
-            // Tilføj produkter og reducer lager
+            // Add items to order & reduce stock
             foreach (var item in basket)
             {
                 var product = _productRepo.Getproduct(item.Product.Id);
@@ -80,7 +68,7 @@ namespace Hoved_Opgave_Datamatiker.Controllers
 
             _basketService.ClearBasket(customerId);
 
-            // Beregn næste leveringsdato
+            // Get next delivery date based on customer segment
             DateTime? nextDelivery = null;
             if (Enum.TryParse<Segment>(customer.Segment, out var segmentEnum))
             {
@@ -116,30 +104,34 @@ namespace Hoved_Opgave_Datamatiker.Controllers
             });
         }
 
-        /// <summary>
-        /// Henter en ordre baseret på ID, inklusive kunde og produktoplysninger.
-        /// </summary>
-        /// <param name="id">ID på ordren.</param>
-        /// <returns>Et <see cref="OrderSumDto"/> med ordrens detaljer, eller 404 hvis ikke fundet.</returns>
-        [HttpGet("{id}")]
-        public ActionResult<OrderSumDto> GetOrderById(int id)
-        {
-            var order = _repo.GetOrderid(id);
-            if (order == null) return NotFound("Order not found");
+
+    
+
+
+
+
+
+    [HttpGet("{id}")]
+    public ActionResult<OrderSumDto> GetOrderById(int id)
+    {
+        var order = _repo.GetOrderid(id);
+        if (order == null) return NotFound("Order not found");
 
             var customer = _customerRepo.GetCustomerById(order.customerId);
             if (customer == null) return NotFound("Customer not found");
 
-            var deliveryDates = _customerService?.GetDeliveryDatesForCustomer(customer.CustomerId);
-            var nextDate = deliveryDates?
-                .Where(d => d.DeliveryDate > DateTime.Today)
-                .OrderBy(d => d.DeliveryDate)
-                .FirstOrDefault()?.DeliveryDate ?? DateTime.Today.AddDays(7);
+        // Get future delivery dates and pick the next available
+        var deliveryDates = _customerService?.GetDeliveryDatesForCustomer(customer.CustomerId);
+        var nextDate = deliveryDates?
+            .Where(d => d.DeliveryDate > DateTime.Today)
+            .OrderBy(d => d.DeliveryDate)
+            .FirstOrDefault()?.DeliveryDate ?? DateTime.Today.AddDays(7); // fallback if no dates
 
-            var products = order.OrderItems.Select(oi =>
-            {
-                var product = _productRepo.Getproduct(oi.ProductId);
-                if (product == null) return null;
+        // Build product list with total per item
+        var products = order.OrderItems.Select(oi =>
+        {
+            var product = _productRepo.Getproduct(oi.ProductId);
+            if (product == null) return null;
 
                 return new ProductOrderSummaryDto
                 {
@@ -149,15 +141,16 @@ namespace Hoved_Opgave_Datamatiker.Controllers
                 };
             }).Where(p => p != null).ToList();
 
-            var summary = new OrderSumDto
-            {
-                CustomerId = customer.CustomerId,
-                CustomerName = customer.Name,
-                CustomerAddress = customer.Address,
-                OrderId = order.OrderId,
-                NextDeliveryDate = nextDate,
-                Products = products
-            };
+        // Construct final order summary
+        var summary = new OrderSumDto
+        {
+            CustomerId = customer.CustomerId,
+            CustomerName = customer.Name,
+            CustomerAddress = customer.Address,
+            OrderId = order.OrderId,
+            NextDeliveryDate = nextDate,
+            Products = products
+        };
 
             return Ok(summary);
         }
