@@ -16,26 +16,16 @@ namespace Hoved_Opgave_Datamatiker.Services
         private readonly IOrderRepo _orderRepo;
         private readonly IProductRepo _productRepo;
 
-<<<<<<< HEAD
-        public OrderService(AppDBContext context, IOrderRepo orderRepo, IProductRepo productRepo)
-=======
         /// <summary>
         /// Constructor med dependency injection af databasekontekst.
         /// </summary>
-        /// <param name="context">AppDBContext til databaseadgang.</param>
-        public OrderService(AppDBContext context)
->>>>>>> 96b5ca0fa3cc08fe13708d7fd00ad29cda7995b3
+        public OrderService(AppDBContext context, IOrderRepo orderRepo, IProductRepo productRepo)
         {
             _Context = context;
             _orderRepo = orderRepo;
             _productRepo = productRepo;
         }
 
-        /// <summary>
-        /// Opretter en ny ordre for en bestemt kunde med tom ordreliste og status "Pending".
-        /// </summary>
-        /// <param name="customerId">ID på kunden.</param>
-        /// <returns>Den oprettede ordre.</returns>
         public Order CreateOrder(int customerId)
         {
             var order = new Order
@@ -54,13 +44,6 @@ namespace Hoved_Opgave_Datamatiker.Services
             return order;
         }
 
-        /// <summary>
-        /// Tilføjer et produkt til en eksisterende ordre i databasen.
-        /// Hvis produktet allerede findes i ordren, øges mængden.
-        /// </summary>
-        /// <param name="orderId">ID på ordren.</param>
-        /// <param name="product">Produkt der skal tilføjes.</param>
-        /// <param name="quantity">Antal af produktet.</param>
         public void AddProductToOrderDB(int orderId, Product product, int quantity)
         {
             var order = _Context.Orders
@@ -94,22 +77,12 @@ namespace Hoved_Opgave_Datamatiker.Services
             }
         }
 
-        /// <summary>
-        /// Beregner den samlede pris for en ordre baseret på produkter og mængder.
-        /// Intern hjælpermetode.
-        /// </summary>
-        /// <param name="order">Ordren der skal opdateres.</param>
         private void UpdateTotalAmount(Order order)
         {
             order.TotalAmount = order.OrderItems
                                      .Sum(item => item.Quantity * item.UnitPrice);
         }
 
-        /// <summary>
-        /// Henter en specifik ordre med produkter baseret på ordre-ID.
-        /// </summary>
-        /// <param name="orderId">Ordre-ID.</param>
-        /// <returns>Ordren med ordrelinjer og tilknyttede produkter.</returns>
         public Order? GetOrderById(int orderId)
         {
             return _Context.Orders
@@ -118,11 +91,6 @@ namespace Hoved_Opgave_Datamatiker.Services
                            .FirstOrDefault(o => o.OrderId == orderId);
         }
 
-        /// <summary>
-        /// Henter alle ordrer for en bestemt kunde, sorteret efter dato (nyeste først).
-        /// </summary>
-        /// <param name="customerId">ID på kunden.</param>
-        /// <returns>Liste af ordrer med produkter.</returns>
         public List<Order> GetOrdersByCustomer(int customerId)
         {
             return _Context.Orders
@@ -133,11 +101,6 @@ namespace Hoved_Opgave_Datamatiker.Services
                            .ToList();
         }
 
-        /// <summary>
-        /// Opdaterer betalingsstatus for en ordre, f.eks. efter betaling via Stripe.
-        /// </summary>
-        /// <param name="orderId">Ordre-ID.</param>
-        /// <param name="status">Ny betalingsstatus (f.eks. "Paid").</param>
         public void UpdatePaymentStatus(int orderId, string status)
         {
             var order = _Context.Orders.Find(orderId);
@@ -148,10 +111,6 @@ namespace Hoved_Opgave_Datamatiker.Services
             }
         }
 
-        /// <summary>
-        /// Sletter en ordre og alle dens ordrelinjer fra databasen.
-        /// </summary>
-        /// <param name="orderId">Ordre-ID der skal slettes.</param>
         public void DeleteOrder(int orderId)
         {
             var order = _Context.Orders
@@ -166,34 +125,26 @@ namespace Hoved_Opgave_Datamatiker.Services
             }
         }
 
-        /// <summary>
-        /// Ikke implementeret metode fra IOrderService interface. 
-        /// Skal evt. bruges i test-scenarier.
-        /// </summary>
         public void AddProductToOrder(int orderId, Product product, int quantity)
         {
             throw new NotImplementedException();
         }
-<<<<<<< HEAD
 
         public List<TopSellingProductDto> GetTopSellingProducts()
         {
-            // Step 1: Get all orders and include their OrderItems
             var ordersWithItems = _Context.Orders
                 .Include(o => o.OrderItems)
                 .ToList();
 
-            // Step 2: Flatten all OrderItems into one list
             var allOrderItems = ordersWithItems
                 .SelectMany(o => o.OrderItems)
                 .ToList();
 
-            // Step 3: Group by ProductId and compute total quantity sold
             var grouped = allOrderItems
                 .GroupBy(oi => oi.ProductId)
                 .Select(g =>
                 {
-                    var product = _Context.Products.Find(g.Key); // or use _productRepo.Getproduct(g.Key)
+                    var product = _Context.Products.Find(g.Key);
                     return new TopSellingProductDto
                     {
                         Name = product?.Name ?? "Unknown",
@@ -223,7 +174,7 @@ namespace Hoved_Opgave_Datamatiker.Services
 
             return grouped;
         }
-        // Services/OrderService.cs
+
         public OrderMonthSummaryDto GetOrderSummary()
         {
             var now = DateTime.Now;
@@ -232,7 +183,8 @@ namespace Hoved_Opgave_Datamatiker.Services
             var monthStart = new DateTime(now.Year, now.Month, 1);
             var yearStart = new DateTime(now.Year, 1, 1);
 
-            var allOrders = _Context.Orders.ToList(); // Add filtering if needed
+            var allOrders = _Context.Orders.ToList();
+
             return new OrderMonthSummaryDto
             {
                 TotalOrders = allOrders.Count,
@@ -247,15 +199,5 @@ namespace Hoved_Opgave_Datamatiker.Services
                     .Sum(o => o.TotalAmount)
             };
         }
-
-
-
-
-
-
-
-
-=======
->>>>>>> 96b5ca0fa3cc08fe13708d7fd00ad29cda7995b3
     }
 }

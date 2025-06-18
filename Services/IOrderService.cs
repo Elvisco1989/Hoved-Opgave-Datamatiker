@@ -60,21 +60,25 @@ namespace Hoved_Opgave_Datamatiker.Services
         /// <param name="quantity">Antal.</param>
         void AddProductToOrder(int orderId, Product product, int quantity);
 
-<<<<<<< HEAD
+        /// <summary>
+        /// Returnerer en liste over de mest solgte produkter.
+        /// </summary>
+        /// <returns>Liste af TopSellingProductDto.</returns>
         List<TopSellingProductDto> GetTopSellingProducts();
 
+        /// <summary>
+        /// Returnerer en liste over de kunder, der har genereret mest omsætning.
+        /// </summary>
+        /// <returns>Liste af TopCustomerDto.</returns>
         List<TopCustomerDto> GetTopCustomers();
+
+        /// <summary>
+        /// Returnerer statistik for ordrer og omsætning fordelt på uge, måned og år.
+        /// </summary>
+        /// <returns>Et OrderMonthSummaryDto-objekt med summerede værdier.</returns>
         OrderMonthSummaryDto GetOrderSummary();
 
-
-
-
-        //IEnumerable<OrderItem> GetOrderItems(int orderId);
-
-
-=======
         // Eksempel på fremtidig metode:
         // IEnumerable<OrderItem> GetOrderItems(int orderId);
->>>>>>> 96b5ca0fa3cc08fe13708d7fd00ad29cda7995b3
     }
 }
