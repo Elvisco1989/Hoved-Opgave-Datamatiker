@@ -18,26 +18,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-//builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 
-//// Register StripeClient as a singleton
-//builder.Services.AddSingleton<IStripeClient>(sp =>
-//{
-//    var stripeSettings = sp.GetRequiredService<IOptions<StripeSettings>>().Value;
-//    return new StripeClient(stripeSettings.SecretKey);
-//});
+// Register StripeClient as a singleton
+builder.Services.AddSingleton<IStripeClient>(sp =>
+{
+    var stripeSettings = sp.GetRequiredService<IOptions<StripeSettings>>().Value;
+    return new StripeClient(stripeSettings.SecretKey);
+});
 
 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.WithOrigins("http://localhost:5173") // Allow frontend origin
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
- 
 });
+
 
 
 
@@ -48,7 +48,7 @@ builder.Services.AddSwaggerGen();
 //builder.Services.AddSingleton<ICustomerRepo, CustomerRepo>();
 builder.Services.AddScoped<ICustomerRepo, CustomerDBrepo>();
 builder.Services.AddScoped<ICustomerService, Hoved_Opgave_Datamatiker.Services.CustomerService>();
-//builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<PaymentService>();
 
 builder.Services.AddScoped<IDeliveryDateService, DeliveryDateService>();
 builder.Services.AddSingleton<IDeliveryDateRepo, DeliveryDateRepo>();
@@ -64,11 +64,19 @@ builder.Services.AddScoped<IProductService, Hoved_Opgave_Datamatiker.Services.Pr
 //builder.Services.AddSingleton<IOrderRepo, OrderRepo>();
 builder.Services.AddScoped<IOrderRepo, OrderDBrepo>();
 builder.Services.AddDbContext<AppDBContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//builder.Services.AddDbContext<AppDBContext>(options =>
+//    options.UseSqlServer(
+//        builder.Configuration.GetConnectionString("ADConnection"),
+//        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure()
+//    ));
+
 
 builder.Services.AddDbContext<LoginDBContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("Login")));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<LoginDBContext>()
+
 
 .AddEntityFrameworkStores<LoginDBContext>()
 .AddDefaultTokenProviders();
@@ -78,11 +86,15 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 
@@ -98,5 +110,9 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
+//app.MapFallbackToFile("index.html");
+
 
 app.Run();
+
+
